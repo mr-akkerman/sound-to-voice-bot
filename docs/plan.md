@@ -88,37 +88,36 @@
 
 ---
 
-## Этап 6: Docker и финальная проверка
+## Этап 6: Railway деплой и финальная проверка
 
 ### Задачи
-- [ ] Создать `Dockerfile`
-  - Базовый образ: `python:3.11-slim`
-  - Установка системных зависимостей: `ffmpeg`
-  - Копирование файлов проекта
-  - Установка Python-зависимостей из `requirements.txt`
-  - Команда запуска: `python main.py`
-- [ ] Создать `docker-compose.yml`
-  - Сервис `bot`
-  - Подключение `.env` файла через `env_file`
-  - Монтирование тома для `tmp/` (опционально)
-  - Политика перезапуска: `unless-stopped`
+- [ ] Создать `nixpacks.toml` — указать ffmpeg как системную зависимость для Railway
+  ```toml
+  [phases.setup]
+  nixPkgs = ["ffmpeg"]
+  ```
+- [ ] Создать `railway.toml` — явно задать команду запуска
+  ```toml
+  [deploy]
+  startCommand = "python main.py"
+  ```
 - [ ] Создать `README.md`
   - Описание проекта
-  - Требования (Docker / Python + ffmpeg)
+  - Требования для локального запуска (Python 3.11+, ffmpeg)
   - Инструкция по запуску локально
-  - Инструкция по запуску через Docker
+  - Инструкция по деплою на Railway (шаги: создать проект, подключить repo, задать `BOT_TOKEN`)
   - Описание переменных окружения
-- [ ] Финальная проверка: собрать Docker-образ, убедиться что всё работает
+- [ ] Финальная проверка: пуш в ветку, убедиться что Railway собирает и запускает бота
 
 ### Ожидаемый результат
-Проект полностью готов к деплою. Запуск одной командой `docker-compose up`. README даёт исчерпывающую инструкцию для нового разработчика.
+Проект полностью готов к деплою. Деплой = пуш в git. README даёт исчерпывающую инструкцию для нового разработчика.
 
 ---
 
 ## Итоговая структура проекта
 
 ```
-mp3_to_voice_bot/
+sound-to-voice-bot/
 ├── bot/
 │   ├── __init__.py
 │   ├── handlers.py       # хендлеры aiogram
@@ -131,8 +130,8 @@ mp3_to_voice_bot/
 ├── .env                  # не коммитится
 ├── .env.example
 ├── .gitignore
-├── Dockerfile
-├── docker-compose.yml
+├── nixpacks.toml         # системные зависимости для Railway (ffmpeg)
+├── railway.toml          # конфигурация деплоя Railway
 ├── main.py               # точка входа
 ├── requirements.txt
 └── README.md
@@ -140,11 +139,12 @@ mp3_to_voice_bot/
 
 ## Зависимости
 
+Python (requirements.txt):
 ```
 aiogram==3.x
 pydub==0.x
 python-dotenv==1.x
 ```
 
-Системные зависимости (устанавливаются в Docker):
+Системные зависимости (устанавливаются Railway через nixpacks.toml):
 - `ffmpeg` — обязательно для pydub (кодек libopus)
