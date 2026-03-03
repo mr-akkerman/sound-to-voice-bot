@@ -23,14 +23,15 @@ async def handle_start(message: Message) -> None:
     )
 
 
-@router.message(F.document.mime_type == "audio/mpeg")
+@router.message(F.audio | (F.document.mime_type == "audio/mpeg"))
 async def handle_mp3(message: Message, bot: Bot) -> None:
-    doc = message.document
+    # Telegram sends MP3 either as audio (music player) or as document
+    doc = message.audio or message.document
     file_id = str(uuid.uuid4())
     mp3_path = os.path.join(_TMP_DIR, f"{file_id}.mp3")
     ogg_path = os.path.join(_TMP_DIR, f"{file_id}.ogg")
 
-    logger.info("Received MP3: %s (%d bytes)", doc.file_name, doc.file_size)
+    logger.info("Received MP3: %s (%s bytes)", doc.file_name, doc.file_size)
 
     try:
         await bot.download(doc, destination=mp3_path)
